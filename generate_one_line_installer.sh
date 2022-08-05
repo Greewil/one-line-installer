@@ -36,17 +36,14 @@ function _yes_no_question() {
   command_on_no=$3
 
   asking_question='true'
-  echo -en "$BROWN"
   while [ "$asking_question" = 'true' ]; do
-    read -p "($APP_NAME : INPUT) $question_text (Y/N): " -r answer
+    read -p "$(echo -e "$BROWN($APP_NAME : INPUT) $question_text (Y/N): $NEUTRAL_COLOR")" -r answer
     case "$answer" in
     y|Y|Yes|yes)
-      echo -en "$NEUTRAL_COLOR"
       ($command_on_yes)
       asking_question='false'
       ;;
     n|N|No|no)
-      echo -en "$NEUTRAL_COLOR"
       ($command_on_no)
       asking_question='false'
       ;;
@@ -57,9 +54,7 @@ function _yes_no_question() {
 function _get_input() {
   ask_input_message=$1
   output_variable_name=$2
-  echo -en "$BROWN"
-  read -p "($APP_NAME : INPUT) $ask_input_message: " -r "$output_variable_name"
-  echo -en "$NEUTRAL_COLOR"
+  read -p "$(echo -e "$BROWN($APP_NAME : INPUT) $ask_input_message: $NEUTRAL_COLOR")" -r "$output_variable_name"
 }
 
 function _get_message_command() {
@@ -105,7 +100,7 @@ function get_final_command() {
   printf '\nYour command for your installation: \n\n'
   echo "$output_command"
   printf "\n"
-  _show_warning_message "Be sure that after copy-pasting this command it won't have any line breaking symbols!"
+  _show_warning_message "Make sure that after copying and pasting, there will be no line breaking characters in command!"
 }
 
 function ask_parameters() {
