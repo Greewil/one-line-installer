@@ -17,11 +17,11 @@ BROWN='\e[0;33m'      # color for inputs
 LIGHT_CYAN='\e[1;36m' # color for changes
 
 # input variables (Please don't modify!)
-PROJECT_NAME=''                   # project name
-DOWNLOAD_REPO_URL=''              # https://github.com/Greewil/one-line-installer/archive/refs/heads/branch_installation.zip
-EXTRACT_COMMAND=''                # unzip one-line-installer-branch_installation.zip
-INSTALL_COMMAND=''                # cd one-line-installer-branch_installation; ls -la
-SHOW_GENERATOR_LINK='true'        # true/false
+PROJECT_NAME=''                   # f.e. project name
+DOWNLOAD_REPO_URL=''              # f.e. https://github.com/Greewil/one-line-installer/archive/refs/heads/branch_installation.zip
+UNPACK_COMMAND=''                 # f.e. unzip one-line-installer-branch_installation.zip
+INSTALL_COMMAND=''                # f.e. cd one-line-installer-branch_installation; ls -la
+SHOW_GENERATOR_LINK='true'        # f.e. true/false
 
 
 function _show_error_message() {
@@ -77,17 +77,26 @@ function _get_download_src_command() {
   mkdir_command="mkdir -p \$tmp_dir"
   go_tmp_dir_command="cd \$tmp_dir"
   download_command="curl $DOWNLOAD_REPO_URL -O -J -L"
-  output_command="$tmp_dir_var_command; $start_dir_var_command; $mkdir_command; $go_tmp_dir_command; $download_command"
+  output_command="$(_get_message_command "downloading $PROJECT_NAME packages ..."); $tmp_dir_var_command"
+  output_command="$output_command; $start_dir_var_command; $mkdir_command; $go_tmp_dir_command; $download_command;"
   echo "$output_command"
 }
 
 function _unpack_command() {
-  output_command="$EXTRACT_COMMAND"
+  if [ "$UNPACK_COMMAND" = '' ]; then
+    output_command=''
+  else
+    output_command="$(_get_message_command "unpacking ..."); $UNPACK_COMMAND;"
+  fi
   echo "$output_command"
 }
 
 function _get_install_command() {
-  output_command="$INSTALL_COMMAND"
+  if [ "$INSTALL_COMMAND" = '' ]; then
+    output_command=''
+  else
+    output_command="$(_get_message_command "installing $PROJECT_NAME ..."); $INSTALL_COMMAND;"
+  fi
   echo "$output_command"
 }
 
@@ -95,39 +104,63 @@ function _get_remove_src_command() {
   date_time='$(date +%s%N)'
   go_to_start_dir="cd \$start_dir"
   remove_tmp_dir_command="rm -r \$tmp_dir"
-  output_command="$go_to_start_dir; $remove_tmp_dir_command"
+  output_command="$(_get_message_command "clearing tmp files ..."); $go_to_start_dir; $remove_tmp_dir_command;"
   echo "$output_command"
 }
 
 function get_final_command() {
-  download_command="$(_get_message_command "downloading $PROJECT_NAME packages ..."); $(_get_download_src_command)"
-  unpack_command="$(_get_message_command "unpacking ..."); $(_unpack_command)"
-  install_command="$(_get_message_command "installing $PROJECT_NAME ..."); $(_get_install_command)"
-  clean_command="$(_get_message_command "clearing tmp files ..."); $(_get_remove_src_command)"
-  completed_message="$(_get_message_command "Installation successfully completed!")"
-  output_command="$download_command; $unpack_command; $install_command; $clean_command; $completed_message"
+  download_command="$(_get_download_src_command)"
+  unpack_command="$(_unpack_command)"
+  install_command="$(_get_install_command)"
+  clean_command="$(_get_remove_src_command)"
+  completed_message="$(_get_message_command "Installation successfully completed!");"
   if [ "$SHOW_GENERATOR_LINK" = 'true' ]; then
-    advertisement_message="This installation command was generated with $OFFICIAL_REPO_FULL"
-    output_command="$output_command; $(_get_message_command "$advertisement_message")"
+    advertisement_text="This installation command was generated with $OFFICIAL_REPO_FULL"
+    advertisement_message="$(_get_message_command "$advertisement_text")"
+  else
+    advertisement_message=''
   fi
+  output_command="$download_command $unpack_command $install_command $clean_command $completed_message"
+  output_command="$output_command $advertisement_message"
   printf '\nYour command for your installation: \n\n'
   echo "$output_command"
   printf "\n"
   _show_warning_message "Make sure that after copying and pasting, there will be no line breaking characters in command!"
 }
 
-function ask_parameters() {
+function _ask_project_name() {
   ask_project_name='Enter your project name'
   _get_input "$ask_project_name" "PROJECT_NAME"
+  [ "$PROJECT_NAME" = '' ] && PROJECT_NAME='project'
+}
+
+function _ask_package_link() {
   ask_package_link='Enter link for downloading your project' # TODO test if exists
   _get_input "$ask_package_link" "DOWNLOAD_REPO_URL"
-  ask_extract_command='Enter command which extracts downloaded archive' # TODO test command works properly without errors
-  _get_input "$ask_extract_command" "EXTRACT_COMMAND"
+}
+
+function _ask_unpack_command() {
+  ask_unpack_command='Enter command which unpacks downloaded archive' # TODO test command works properly without errors
+  _get_input "$ask_unpack_command" "UNPACK_COMMAND"
+}
+
+function _ask_installation_command() {
   ask_installation_command='Enter command which installs your project'
   _get_input "$ask_installation_command" "INSTALL_COMMAND"
+}
+
+function _ask_leave_generator_link() {
   echo "It would be great if other people will know about this project."
   ask_leave_generator_link='Do you want to show the link to this project after each installation?'
   _yes_no_question "$ask_leave_generator_link" 'SHOW_GENERATOR_LINK=true' 'SHOW_GENERATOR_LINK=false'
+}
+
+function ask_parameters() {
+  _ask_project_name
+  _ask_package_link
+  _ask_unpack_command
+  _ask_installation_command
+  _ask_leave_generator_link
 }
 
 
