@@ -1,18 +1,27 @@
 #!/usr/bin/env bash
 
-# Output colors
-APP_NAME='one-line-installer'
-NEUTRAL_COLOR='\e[0m'
-RED='\e[1;31m'        # for errors
-YELLOW='\e[1;33m'     # for warnings
-BROWN='\e[0;33m'      # for inputs
-LIGHT_CYAN='\e[1;36m' # for changes
+# Written by Shishkin Sergey <shishkin.sergey.d@gmail.com>
+
+# Current version of version_manager.sh.
+INSTALLER_GENERATOR_VERSION='0.1.0'
+
+OFFICIAL_REPO='Greewil/one-line-installer'
+OFFICIAL_REPO_FULL="https://github.com/$OFFICIAL_REPO"
+
+# Output style: titles and colors
+APP_NAME='installer-generator'
+NEUTRAL_COLOR='\e[0m' # neutral color
+RED='\e[1;31m'        # color for errors
+YELLOW='\e[1;33m'     # color for warnings
+BROWN='\e[0;33m'      # color for inputs
+LIGHT_CYAN='\e[1;36m' # color for changes
 
 # input variables (Please don't modify!)
 PROJECT_NAME=''                   # project name
 DOWNLOAD_REPO_URL=''              # https://github.com/Greewil/one-line-installer/archive/refs/heads/branch_installation.zip
 EXTRACT_COMMAND=''                # unzip one-line-installer-branch_installation.zip
 INSTALL_COMMAND=''                # cd one-line-installer-branch_installation; ls -la
+SHOW_GENERATOR_LINK='true'        # true/false
 
 
 function _show_error_message() {
@@ -34,17 +43,16 @@ function _yes_no_question() {
   question_text=$1
   command_on_yes=$2
   command_on_no=$3
-
   asking_question='true'
   while [ "$asking_question" = 'true' ]; do
     read -p "$(echo -e "$BROWN($APP_NAME : INPUT) $question_text (Y/N): $NEUTRAL_COLOR")" -r answer
     case "$answer" in
     y|Y|Yes|yes)
-      ($command_on_yes)
+      eval "$command_on_yes"
       asking_question='false'
       ;;
     n|N|No|no)
-      ($command_on_no)
+      eval "$command_on_no"
       asking_question='false'
       ;;
     esac
@@ -96,7 +104,12 @@ function get_final_command() {
   unpack_command="$(_get_message_command "unpacking ..."); $(_unpack_command)"
   install_command="$(_get_message_command "installing $PROJECT_NAME ..."); $(_get_install_command)"
   clean_command="$(_get_message_command "clearing tmp files ..."); $(_get_remove_src_command)"
-  output_command="$download_command; $unpack_command; $install_command; $clean_command"
+  completed_message="$(_get_message_command "Installation successfully completed!")"
+  output_command="$download_command; $unpack_command; $install_command; $clean_command; $completed_message"
+  if [ "$SHOW_GENERATOR_LINK" = 'true' ]; then
+    advertisement_message="This installation command was generated with $OFFICIAL_REPO_FULL"
+    output_command="$output_command; $(_get_message_command "$advertisement_message")"
+  fi
   printf '\nYour command for your installation: \n\n'
   echo "$output_command"
   printf "\n"
@@ -112,6 +125,9 @@ function ask_parameters() {
   _get_input "$ask_extract_command" "EXTRACT_COMMAND"
   ask_installation_command='Enter command which installs your project'
   _get_input "$ask_installation_command" "INSTALL_COMMAND"
+  echo "It would be great if other people will know about this project."
+  ask_leave_generator_link='Do you want to show the link to this project after each installation?'
+  _yes_no_question "$ask_leave_generator_link" 'SHOW_GENERATOR_LINK=true' 'SHOW_GENERATOR_LINK=false'
 }
 
 
