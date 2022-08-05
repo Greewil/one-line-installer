@@ -104,6 +104,8 @@ function get_final_command() {
   output_command="$download_command; $unpack_command; $install_command; $clean_command"
   printf '\nYour command for your installation: \n\n'
   echo "$output_command"
+  printf "\n"
+  _show_warning_message "Be sure that after copy-pasting this command it won't have any line breaking symbols!"
 }
 
 function ask_parameters() {
@@ -118,6 +120,9 @@ function ask_parameters() {
 }
 
 
-ask_parameters
+ask_parameters || exit 1
 
-get_final_command
+get_final_command || {
+  _show_error_message "Failed to generate installation command! Something went wrong."
+  exit 1
+}
