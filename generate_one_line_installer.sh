@@ -158,6 +158,7 @@ function _show_final_command() {
   echo "$FINAL_INSTALLATION_COMMAND"
   printf "\n"
   _show_warning_message "Make sure that after copying and pasting, there will be no line breaking characters in command!"
+  printf "\n"
 }
 
 function _check_file_can_be_created() {
@@ -197,7 +198,6 @@ function _check_link() {
   if [ "$test_output" = '' ]; then
     return 1
   fi
-  echo "URL exists and can be reached"
 }
 
 function _ask_package_link() {
@@ -237,6 +237,11 @@ function ask_parameters() {
   _ask_leave_generator_link
 }
 
+
+if [ "$1" = '-v' ]; then
+  echo "$INSTALLER_GENERATOR_VERSION"
+  exit 0
+fi
 
 ask_parameters || exit 1
 _get_final_command || {
