@@ -23,6 +23,9 @@ UNPACK_COMMAND=''                 # f.e. unzip one-line-installer-branch_install
 INSTALL_COMMAND=''                # f.e. cd one-line-installer-branch_installation; ls -la
 SHOW_GENERATOR_LINK='true'        # f.e. true/false
 
+# global variables (Please don't modify!)
+FINAL_INSTALLATION_COMMAND=''
+
 
 function _show_error_message() {
   message=$1
@@ -133,24 +136,51 @@ function _get_remove_src_command() {
   echo "$output_command"
 }
 
-function get_final_command() {
+function _get_final_command() {
   download_command="$(_get_download_src_command)"
   unpack_command="$(_unpack_command)"
   install_command="$(_get_install_command)"
   clean_command="$(_get_remove_src_command)"
-  completed_message="$(_get_message_command "Installation successfully completed!");"
+  completed_message="$(_get_message_command "Installation completed!");"
   if [ "$SHOW_GENERATOR_LINK" = 'true' ]; then
     advertisement_text="This installation command was generated with $OFFICIAL_REPO_FULL"
     advertisement_message="$(_get_message_command "$advertisement_text")"
   else
     advertisement_message=''
   fi
-  output_command="$download_command $unpack_command $install_command $clean_command $completed_message"
-  output_command="$output_command $advertisement_message"
+  final_command="$download_command $unpack_command $install_command $clean_command $completed_message"
+  final_command="$final_command $advertisement_message"
+  FINAL_INSTALLATION_COMMAND="$final_command"
+}
+
+function _show_final_command() {
   printf '\nYour command for your installation: \n\n'
-  echo "$output_command"
+  echo "$FINAL_INSTALLATION_COMMAND"
   printf "\n"
   _show_warning_message "Make sure that after copying and pasting, there will be no line breaking characters in command!"
+}
+
+function _check_file_can_be_created() {
+  file=$1
+  if [ -d "$file" ] || [ "$file" = '' ] || [ "$file" = '/' ]; then
+    return 1
+  fi
+}
+
+function _try_save_final_command() {
+  file_name=''
+  ask_package_link='Enter file in which you want to save generated command'
+  output_variable_name='file_name'
+  check_function="_check_file_can_be_created"
+  check_failed_message="File can't be created!"
+  _get_input_with_check "$ask_package_link" "$output_variable_name" "$check_function" "$check_failed_message"
+  save_to_file_command='echo "$FINAL_INSTALLATION_COMMAND" > "$file_name"'
+  if [ -f "$file_name" ]; then
+    ask_rewrite="File $file_name already exists. Do you want to rewrite file?"
+    _yes_no_question "$ask_rewrite" "$save_to_file_command" '_ask_save_installer_to_file'
+  else
+    eval "$save_to_file_command"
+  fi
 }
 
 function _ask_project_name() {
@@ -171,7 +201,7 @@ function _check_link() {
 }
 
 function _ask_package_link() {
-  ask_package_link='Enter link for downloading your project' # TODO test if exists
+  ask_package_link='Enter link for downloading your project'
   output_variable_name='DOWNLOAD_REPO_URL'
   check_function="_check_link"
   check_failed_message="URL doesn't exist or it's unreachable!"
@@ -194,6 +224,11 @@ function _ask_leave_generator_link() {
   _yes_no_question "$ask_leave_generator_link" 'SHOW_GENERATOR_LINK=true' 'SHOW_GENERATOR_LINK=false'
 }
 
+function _ask_save_installer_to_file() {
+  ask_save_to_file='Do you want to save generated installer command to file?'
+  _yes_no_question "$ask_save_to_file" '_try_save_final_command' ''
+}
+
 function ask_parameters() {
   _ask_project_name
   _ask_package_link
@@ -204,8 +239,9 @@ function ask_parameters() {
 
 
 ask_parameters || exit 1
-
-get_final_command || {
+_get_final_command || {
   _show_error_message "Failed to generate installation command! Something went wrong."
   exit 1
 }
+_show_final_command
+_ask_save_installer_to_file
