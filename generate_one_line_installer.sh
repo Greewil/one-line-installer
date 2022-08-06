@@ -65,6 +65,31 @@ function _get_input() {
   read -p "$(echo -e "$BROWN($APP_NAME : INPUT) $ask_input_message: $NEUTRAL_COLOR")" -r "$output_variable_name"
 }
 
+# Ask user to write input string and checks it.
+# Asks input until check_function ($3) returns true.
+#
+# $1 - Message that asks an input from user
+# $2 - Output variable name in which function should leave the result
+# $3 - Function that returns 1 if input was incorrect and user should write it again.
+# $4 - Message that will be shown if check_function ($3) will return 1
+#
+# Returns nothing.
+function _get_input_with_check() {
+  ask_input_message=$1
+  output_variable=$2
+  check_function=$3
+  check_failed_message=$4
+  waiting_for_input='true'
+  while [ "$waiting_for_input" = 'true' ]; do
+    _get_input "$ask_input_message" "$output_variable"
+    waiting_for_input='false'
+    eval "$check_function ${!output_variable}" || {
+      waiting_for_input='true'
+      _show_warning_message "'${!output_variable}': $check_failed_message"
+    }
+  done
+}
+
 function _get_message_command() {
   message_text=$1
   echo "printf '\n$message_text\n\n'"
@@ -134,9 +159,23 @@ function _ask_project_name() {
   [ "$PROJECT_NAME" = '' ] && PROJECT_NAME='project'
 }
 
+function _check_link() {
+  link=$1
+  echo "checking your URL ..."
+  [ "$link" = '' ] && return 1
+  test_output=$(curl -s --head "$link" | head -n 1 | grep "HTTP/.* [23]..")
+  if [ "$test_output" = '' ]; then
+    return 1
+  fi
+  echo "URL exists and can be reached"
+}
+
 function _ask_package_link() {
   ask_package_link='Enter link for downloading your project' # TODO test if exists
-  _get_input "$ask_package_link" "DOWNLOAD_REPO_URL"
+  output_variable_name='DOWNLOAD_REPO_URL'
+  check_function="_check_link"
+  check_failed_message="URL doesn't exist or it's unreachable!"
+  _get_input_with_check "$ask_package_link" "$output_variable_name" "$check_function" "$check_failed_message"
 }
 
 function _ask_unpack_command() {
