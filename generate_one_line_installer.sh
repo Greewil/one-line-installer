@@ -95,7 +95,11 @@ function _get_input_with_check() {
 
 function _get_message_command() {
   message_text=$1
-  echo "printf '\n$message_text\n\n'"
+  echo "printf '%b' '\n$message_text\n\n'"
+}
+
+function _get_advertisement_message_command() {
+  echo "printf '%b' '\nThis installation command was generated with \\e[1;34m$OFFICIAL_REPO_FULL\\e[0m\n\n'"
 }
 
 function _get_download_src_command() {
@@ -143,7 +147,7 @@ function _get_final_command() {
   clean_command="$(_get_remove_src_command)"
   completed_message="$(_get_message_command "Installation completed!");"
   if [ "$SHOW_GENERATOR_LINK" = 'true' ]; then
-    advertisement_text="This installation command was generated with $OFFICIAL_REPO_FULL"
+    advertisement_text="This installation command was generated with \\e[1;34m$OFFICIAL_REPO_FULL\\e[0m"
     advertisement_message="$(_get_message_command "$advertisement_text")"
   else
     advertisement_message=''
