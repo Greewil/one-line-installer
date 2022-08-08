@@ -3,7 +3,7 @@
 # Written by Shishkin Sergey <shishkin.sergey.d@gmail.com>
 
 # Current version of version_manager.sh.
-INSTALLER_GENERATOR_VERSION='0.1.0'
+INSTALLER_GENERATOR_VERSION='0.2.0'
 
 OFFICIAL_REPO='Greewil/one-line-installer'
 OFFICIAL_REPO_FULL="https://github.com/$OFFICIAL_REPO"
@@ -102,23 +102,28 @@ function _get_advertisement_message_command() {
   echo "printf '%b' '\nThis installation command was generated with \\e[1;34m$OFFICIAL_REPO_FULL\\e[0m\n\n'"
 }
 
-function _get_download_src_command() {
+function _get_init_variables_command() {
   date_time='$(date +%s%N)'
   tmp_dir_var_command="tmp_dir=/tmp/installation-$date_time"
   start_dir_var_command="start_dir=\$(pwd)"
-  mkdir_command="mkdir -p \$tmp_dir"
-  go_tmp_dir_command="cd \$tmp_dir"
-  download_command="curl $DOWNLOAD_REPO_URL -O -J -L"
-  output_command="$(_get_message_command "downloading $PROJECT_NAME packages ..."); $tmp_dir_var_command"
-  output_command="$output_command; $start_dir_var_command; $mkdir_command; $go_tmp_dir_command; $download_command;"
+  output_command="$tmp_dir_var_command; $start_dir_var_command"
   echo "$output_command"
 }
 
-function _unpack_command() {
+function _get_download_src_command() {
+  message_command="$(_get_message_command "downloading $PROJECT_NAME packages ...")"
+  mkdir_command="mkdir -p \$tmp_dir"
+  go_tmp_dir_command="cd \$tmp_dir"
+  download_command="curl $DOWNLOAD_REPO_URL -O -J -L"
+  output_command="$message_command; $mkdir_command; $go_tmp_dir_command; $download_command"
+  echo "$output_command"
+}
+
+function _get_unpack_command() {
   if [ "$UNPACK_COMMAND" = '' ]; then
     output_command=''
   else
-    output_command="$(_get_message_command "unpacking ..."); $UNPACK_COMMAND;"
+    output_command="$(_get_message_command "unpacking ..."); $UNPACK_COMMAND"
   fi
   echo "$output_command"
 }
@@ -127,7 +132,7 @@ function _get_install_command() {
   if [ "$INSTALL_COMMAND" = '' ]; then
     output_command=''
   else
-    output_command="$(_get_message_command "installing $PROJECT_NAME ..."); $INSTALL_COMMAND;"
+    output_command="$(_get_message_command "installing $PROJECT_NAME ..."); $INSTALL_COMMAND"
   fi
   echo "$output_command"
 }
@@ -136,25 +141,38 @@ function _get_remove_src_command() {
   date_time='$(date +%s%N)'
   go_to_start_dir="cd \$start_dir"
   remove_tmp_dir_command="rm -r \$tmp_dir"
-  output_command="$(_get_message_command "clearing tmp files ..."); $go_to_start_dir; $remove_tmp_dir_command;"
+  output_command="$go_to_start_dir; $remove_tmp_dir_command"
+  echo "$output_command"
+}
+
+function _add_escape_characters() {
+  command_with_no_escapes=$1
+  output_command="${command_with_no_escapes//\$/\\\$}"
+  output_command="${output_command//\"/\\\"}"
+  output_command="${output_command//!/\\\!}"
   echo "$output_command"
 }
 
 function _get_final_command() {
-  download_command="$(_get_download_src_command)"
-  unpack_command="$(_unpack_command)"
-  install_command="$(_get_install_command)"
-  clean_command="$(_get_remove_src_command)"
-  completed_message="$(_get_message_command "Installation completed!");"
+  failed_message_output="printf \"%b\" \"\n\e[0;31mInstallation failed\e[0m\n\n\""
+  trap_and_exit_command="trap '$failed_message_output; $(_get_remove_src_command)' ERR; set -e"
+
   if [ "$SHOW_GENERATOR_LINK" = 'true' ]; then
     advertisement_text="This installation command was generated with \\e[1;34m$OFFICIAL_REPO_FULL\\e[0m"
     advertisement_message="$(_get_message_command "$advertisement_text")"
   else
     advertisement_message=''
   fi
-  final_command="$download_command $unpack_command $install_command $clean_command $completed_message"
-  final_command="$final_command $advertisement_message"
-  FINAL_INSTALLATION_COMMAND="$final_command"
+
+  final_command="$(_get_init_variables_command)"
+  final_command="$final_command; $trap_and_exit_command"
+  final_command="$final_command; $(_get_download_src_command)"
+  final_command="$final_command; $(_get_unpack_command)"
+  final_command="$final_command; $(_get_install_command)"
+  final_command="$final_command; $(_get_remove_src_command)"
+  final_command="$final_command; $advertisement_message"
+  final_command="$(_add_escape_characters "$final_command")"
+  FINAL_INSTALLATION_COMMAND="bash -c \"$final_command\""
 }
 
 function _show_final_command() {
