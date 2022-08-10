@@ -20,8 +20,8 @@ LIGHT_CYAN='\e[1;36m' # color for changes
 PROJECT_NAME=''                   # f.e. project name
 DOWNLOAD_REPO_URL=''              # f.e. https://github.com/Greewil/one-line-installer/archive/refs/heads/branch_installation.zip
 UNPACK_COMMAND=''                 # f.e. unzip one-line-installer-branch_installation.zip
-INSTALL_COMMAND=''                # f.e. cd one-line-installer-branch_installation; ls -la
-SHOW_GENERATOR_LINK='true'        # f.e. true/false
+INSTALL_COMMAND=''                # f.e. ./one-line-installer-main/installer.sh
+SHOW_GENERATOR_LINK='true'        # true or false
 
 # global variables (Please don't modify!)
 FINAL_INSTALLATION_COMMAND=''
@@ -91,6 +91,17 @@ function _get_input_with_check() {
       _show_warning_message "'${!output_variable}': $check_failed_message"
     }
   done
+}
+
+function _load_project_variables_from_config() {
+  config_file=$1
+  tmp_conf_file="/tmp/vuh_projects_conf_file.conf"
+  echo "$config_file" > $tmp_conf_file
+  . $tmp_conf_file || {
+    rm -f /tmp/vuh_projects_conf_file.conf
+    return 1
+  }
+  rm -f /tmp/vuh_projects_conf_file.conf
 }
 
 function _get_message_command() {
@@ -259,13 +270,27 @@ function ask_parameters() {
   _ask_leave_generator_link
 }
 
+echo "first input: $1"
 
 if [ "$1" = '-v' ]; then
   echo "$INSTALLER_GENERATOR_VERSION"
   exit 0
+elif [ "$1" = '' ]; then
+  # default generation from console input
+  ask_parameters || exit 1
+else
+  # generation by config
+  config=$1
+  conf_file=$(<"$config") || {
+    _show_error_message "Failed to read configuration file $config!"
+    exit 1
+  }
+  _load_project_variables_from_config "$conf_file" || {
+    _show_error_message "Failed to load variables from configuration file $config!"
+    exit 1
+  }
 fi
 
-ask_parameters || exit 1
 _get_final_command || {
   _show_error_message "Failed to generate installation command! Something went wrong."
   exit 1
