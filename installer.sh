@@ -176,7 +176,7 @@ function _install_msys() {
   if [ -n "$HOME" ]; then
     _show_function_title "Installing for msys ..."
     INSTALLATION_DIR="$HOME/bin"
-    _install  || {
+    _install || {
       _show_error_message "Something went wrong due installation!"
       exit 1
     }
