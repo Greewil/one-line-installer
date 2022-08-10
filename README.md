@@ -56,9 +56,14 @@ installation:
 
 ## Usage
 
-To generate your own one line installer just follow the instructions after starting generator script.
+To generate your own one line installer just follow the instructions after starting generator script:
 
     generate_one_line_installer
+
+Also, you can save your installation properties to configuration according to one of the examples from [config_examples].
+If you want to generate installer based on your configuration files use:
+
+    generate_one_line_installer <PATH_TO_YOUR_CONFIG>
 
 ## License
 
@@ -70,3 +75,4 @@ one-line-installer is licensed under the terms of the MIT License. See [LICENSE]
 * Mail: <shishkin.sergey.d@gmail.com>
 
 [LICENSE]: https://github.com/Greewil/one-line-installer/blob/master/LICENSE
+[config_examples]: https://github.com/Greewil/one-line-installer/blob/generate_from_configs/config_examples
