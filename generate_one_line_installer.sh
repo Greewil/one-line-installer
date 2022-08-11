@@ -18,6 +18,7 @@ LIGHT_CYAN='\e[1;36m' # color for changes
 
 # input variables (Please don't modify!)
 PROJECT_NAME=''                   # f.e. project name
+PRE_DOWNLOAD_COMMAND=''           # f.e. nothing
 DOWNLOAD_REPO_URL=''              # f.e. https://github.com/Greewil/one-line-installer/archive/refs/heads/branch_installation.zip
 UNPACK_COMMAND=''                 # f.e. unzip one-line-installer-branch_installation.zip
 INSTALL_COMMAND=''                # f.e. ./one-line-installer-main/installer.sh
@@ -121,12 +122,22 @@ function _get_init_variables_command() {
   echo "$output_command"
 }
 
+function _get_pre_download_command() {
+  if [ "$PRE_DOWNLOAD_COMMAND" = '' ]; then
+    output_command=''
+  else
+    output_command="$PRE_DOWNLOAD_COMMAND"
+  fi
+  echo "$output_command"
+}
+
 function _get_download_src_command() {
   message_command="$(_get_message_command "downloading $PROJECT_NAME packages ...")"
   mkdir_command="mkdir -p \$tmp_dir"
   go_tmp_dir_command="cd \$tmp_dir"
+  pre_download_command="$(_get_pre_download_command)"
   download_command="curl $DOWNLOAD_REPO_URL -O -J -L"
-  output_command="$message_command; $mkdir_command; $go_tmp_dir_command; $download_command"
+  output_command="$message_command; $mkdir_command; $go_tmp_dir_command; $pre_download_command; $download_command"
   echo "$output_command"
 }
 
@@ -233,6 +244,11 @@ function _check_link() {
   fi
 }
 
+function _ask_pre_download_command() {
+  ask_installation_command='Enter command which will run before downloading'
+  _get_input "$ask_installation_command" "PRE_DOWNLOAD_COMMAND"
+}
+
 function _ask_package_link() {
   ask_package_link='Enter link for downloading your project'
   output_variable_name='DOWNLOAD_REPO_URL'
@@ -264,6 +280,7 @@ function _ask_save_installer_to_file() {
 
 function ask_parameters() {
   _ask_project_name
+  _ask_pre_download_command
   _ask_package_link
   _ask_unpack_command
   _ask_installation_command
