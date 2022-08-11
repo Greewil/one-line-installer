@@ -3,7 +3,7 @@
 # Written by Shishkin Sergey <shishkin.sergey.d@gmail.com>
 
 # Current version of version_manager.sh.
-INSTALLER_GENERATOR_VERSION='0.2.0'
+INSTALLER_GENERATOR_VERSION='0.3.0'
 
 OFFICIAL_REPO='Greewil/one-line-installer'
 OFFICIAL_REPO_FULL="https://github.com/$OFFICIAL_REPO"
