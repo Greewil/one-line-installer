@@ -3,7 +3,7 @@
 # Written by Shishkin Sergey <shishkin.sergey.d@gmail.com>
 
 # Current version of version_manager.sh.
-INSTALLER_GENERATOR_VERSION='0.2.0'
+INSTALLER_GENERATOR_VERSION='0.3.0'
 
 OFFICIAL_REPO='Greewil/one-line-installer'
 OFFICIAL_REPO_FULL="https://github.com/$OFFICIAL_REPO"
@@ -18,10 +18,11 @@ LIGHT_CYAN='\e[1;36m' # color for changes
 
 # input variables (Please don't modify!)
 PROJECT_NAME=''                   # f.e. project name
+PRE_DOWNLOAD_COMMAND=''           # f.e. nothing
 DOWNLOAD_REPO_URL=''              # f.e. https://github.com/Greewil/one-line-installer/archive/refs/heads/branch_installation.zip
 UNPACK_COMMAND=''                 # f.e. unzip one-line-installer-branch_installation.zip
-INSTALL_COMMAND=''                # f.e. cd one-line-installer-branch_installation; ls -la
-SHOW_GENERATOR_LINK='true'        # f.e. true/false
+INSTALL_COMMAND=''                # f.e. ./one-line-installer-main/installer.sh
+SHOW_GENERATOR_LINK='true'        # true or false
 
 # global variables (Please don't modify!)
 FINAL_INSTALLATION_COMMAND=''
@@ -93,6 +94,17 @@ function _get_input_with_check() {
   done
 }
 
+function _load_project_variables_from_config() {
+  config_file=$1
+  tmp_conf_file="/tmp/${APP_NAME}_projects_conf_file.conf"
+  echo "$config_file" > $tmp_conf_file
+  . $tmp_conf_file || {
+    rm -f "/tmp/${APP_NAME}_projects_conf_file.conf"
+    return 1
+  }
+  rm -f "/tmp/${APP_NAME}_projects_conf_file.conf"
+}
+
 function _get_message_command() {
   message_text=$1
   echo "printf '%b' '\n$message_text\n\n'"
@@ -110,12 +122,22 @@ function _get_init_variables_command() {
   echo "$output_command"
 }
 
+function _get_pre_download_command() {
+  if [ "$PRE_DOWNLOAD_COMMAND" = '' ]; then
+    output_command=''
+  else
+    output_command="$PRE_DOWNLOAD_COMMAND"
+  fi
+  echo "$output_command"
+}
+
 function _get_download_src_command() {
   message_command="$(_get_message_command "downloading $PROJECT_NAME packages ...")"
   mkdir_command="mkdir -p \$tmp_dir"
   go_tmp_dir_command="cd \$tmp_dir"
+  pre_download_command="$(_get_pre_download_command)"
   download_command="curl $DOWNLOAD_REPO_URL -O -J -L"
-  output_command="$message_command; $mkdir_command; $go_tmp_dir_command; $download_command"
+  output_command="$message_command; $mkdir_command; $go_tmp_dir_command; $pre_download_command; $download_command"
   echo "$output_command"
 }
 
@@ -222,6 +244,11 @@ function _check_link() {
   fi
 }
 
+function _ask_pre_download_command() {
+  ask_installation_command='Enter command which will run before downloading'
+  _get_input "$ask_installation_command" "PRE_DOWNLOAD_COMMAND"
+}
+
 function _ask_package_link() {
   ask_package_link='Enter link for downloading your project'
   output_variable_name='DOWNLOAD_REPO_URL'
@@ -253,19 +280,34 @@ function _ask_save_installer_to_file() {
 
 function ask_parameters() {
   _ask_project_name
+  _ask_pre_download_command
   _ask_package_link
   _ask_unpack_command
   _ask_installation_command
   _ask_leave_generator_link
 }
 
+echo "first input: $1"
 
 if [ "$1" = '-v' ]; then
   echo "$INSTALLER_GENERATOR_VERSION"
   exit 0
+elif [ "$1" = '' ]; then
+  # default generation from console input
+  ask_parameters || exit 1
+else
+  # generation by config
+  config=$1
+  conf_file=$(<"$config") || {
+    _show_error_message "Failed to read configuration file $config!"
+    exit 1
+  }
+  _load_project_variables_from_config "$conf_file" || {
+    _show_error_message "Failed to load variables from configuration file $config!"
+    exit 1
+  }
 fi
 
-ask_parameters || exit 1
 _get_final_command || {
   _show_error_message "Failed to generate installation command! Something went wrong."
   exit 1
