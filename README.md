@@ -1,4 +1,4 @@
-# one-line-installer
+# one-line-installer-generator
 [![release](https://badgen.net/github/release/Greewil/one-line-installer/stable)](https://github.com/Greewil/one-line-installer/releases)
 [![Last updated](https://img.shields.io/github/release-date/Greewil/one-line-installer?label=updated)](https://github.com/Greewil/one-line-installer/releases)
 [![issues](https://badgen.net/github/issues/Greewil/one-line-installer)](https://github.com/Greewil/one-line-installer/issues)
