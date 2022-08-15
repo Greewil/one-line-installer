@@ -141,7 +141,12 @@ function _make_tmp_dir() {
 
 function _get_download_src_command() {
   message_command="$(_get_message_command "downloading $PROJECT_NAME packages ...")"
-  download_command="curl $DOWNLOAD_REPO_URL -O -J -L"
+  if [ "$CUSTOM_DOWNLOAD_COMMAND" = '' ]; then
+    download_command="curl $DOWNLOAD_REPO_URL -O -J -L"
+  else
+    download_command="$CUSTOM_DOWNLOAD_COMMAND"
+    download_command=${download_command/\$DOWNLOAD_REPO_URL/$DOWNLOAD_REPO_URL}
+  fi
   output_command="$message_command; $download_command;"
   echo "$output_command"
 }
