@@ -91,7 +91,7 @@ one-line-installer is licensed under the terms of the MIT License. See [LICENSE]
 * Web: <https://github.com/Greewil/one-line-installer>
 * Mail: <shishkin.sergey.d@gmail.com>
 
-[LICENSE]: https://github.com/Greewil/one-line-installer/blob/master/LICENSE
-[config_examples]: https://github.com/Greewil/one-line-installer/blob/generate_from_configs/config_examples
-[latest release installer example]: https://github.com/Greewil/one-line-installer/blob/generate_from_configs/config_examples/one-line-installer-latest-release.conf
-[branch installer example]: https://github.com/Greewil/one-line-installer/blob/generate_from_configs/config_examples/one-line-installer-from-branch.conf
+[LICENSE]: https://github.com/Greewil/one-line-installer/blob/main/LICENSE
+[config_examples]: https://github.com/Greewil/one-line-installer/blob/main/config_examples
+[latest release installer example]: https://github.com/Greewil/one-line-installer/blob/main/config_examples/one-line-installer-latest-release.conf
+[branch installer example]: https://github.com/Greewil/one-line-installer/blob/main/config_examples/one-line-installer-from-branch.conf
