@@ -20,6 +20,7 @@ LIGHT_CYAN='\e[1;36m' # color for changes
 PROJECT_NAME=''                   # f.e. project name
 PRE_DOWNLOAD_COMMAND=''           # f.e. nothing
 DOWNLOAD_REPO_URL=''              # f.e. https://github.com/Greewil/one-line-installer/archive/refs/heads/branch_installation.zip
+CUSTOM_DOWNLOAD_COMMAND=''        # f.e. '' or 'git clone $DOWNLOAD_REPO_URL'
 UNPACK_COMMAND=''                 # f.e. unzip one-line-installer-branch_installation.zip
 INSTALL_COMMAND=''                # f.e. ./one-line-installer-main/installer.sh
 SHOW_GENERATOR_LINK='true'        # true or false
@@ -269,8 +270,18 @@ function _ask_package_link() {
   _get_input_with_check "$ask_package_link" "$output_variable_name" "$check_function" "$check_failed_message"
 }
 
+function _ask_custom_download_command() {
+  ask_download_command='Enter command which will download all packages'
+  _get_input "$ask_download_command" "CUSTOM_DOWNLOAD_COMMAND"
+}
+
+function _ask_to_use_custom_download_command() {
+  question_text='Do you want to use custom installation command?'
+  _yes_no_question "$question_text" '_ask_custom_download_command' 'CUSTOM_DOWNLOAD_COMMAND=""'
+}
+
 function _ask_unpack_command() {
-  ask_unpack_command='Enter command which unpacks downloaded archive' # TODO test command works properly without errors
+  ask_unpack_command='Enter command which unpacks downloaded archive'
   _get_input "$ask_unpack_command" "UNPACK_COMMAND"
 }
 
@@ -294,6 +305,7 @@ function ask_parameters() {
   _ask_project_name
   _ask_pre_download_command
   _ask_package_link
+  _ask_to_use_custom_download_command
   _ask_unpack_command
   _ask_installation_command
   _ask_leave_generator_link
