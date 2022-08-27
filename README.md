@@ -82,6 +82,8 @@ If you want to generate installer based on your configuration files use:
 
     generate_one_line_installer <PATH_TO_YOUR_CONFIG>
 
+If you want to use '\' symbol you should use '\\' instead because of generator wrapping mechanism!
+
 ## License
 
 one-line-installer is licensed under the terms of the MIT License. See [LICENSE] file.
