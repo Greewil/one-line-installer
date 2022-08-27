@@ -98,14 +98,14 @@ function _get_input_with_check() {
 
 function _load_project_variables_from_config() {
   config_file=$1
-  tmp_conf_file="/tmp/${APP_NAME}_projects_conf_file.conf"
+  tmp_conf_file="/tmp/${APP_NAME}_projects_conf_file"
   echo "$config_file" > $tmp_conf_file
   # shellcheck source=/dev/null
   . $tmp_conf_file || {
-    rm -f "/tmp/${APP_NAME}_projects_conf_file.conf"
+    rm -f "/tmp/${APP_NAME}_projects_conf_file"
     return 1
   }
-  rm -f "/tmp/${APP_NAME}_projects_conf_file.conf"
+  rm -f "/tmp/${APP_NAME}_projects_conf_file"
 }
 
 function _get_message_command() {

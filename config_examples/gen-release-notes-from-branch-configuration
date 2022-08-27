@@ -1,0 +1,22 @@
+# PROJECT_NAME: name of your project
+PROJECT_NAME='project'
+
+# PRE_DOWNLOAD_COMMAND: command which will run before downloading
+PRE_DOWNLOAD_COMMAND=''
+
+# DOWNLOAD_REPO_URL: link for downloading your project
+DOWNLOAD_REPO_URL="https://github.com/Greewil/release-notes-generator/archive/refs/heads/main.zip"
+
+# default download command will use 'curl $DOWNLOAD_REPO_URL -O -J -L'
+# if you want to use default command leave CUSTOM_DOWNLOAD_COMMAND empty
+# CUSTOM_DOWNLOAD_COMMAND: your own download command like 'git clone $DOWNLOAD_REPO_URL'
+CUSTOM_DOWNLOAD_COMMAND=""
+
+# UNPACK_COMMAND: command which unpacks downloaded archive
+UNPACK_COMMAND="unzip release-notes-generator-main.zip"
+
+# INSTALL_COMMAND: command which installs your project
+INSTALL_COMMAND="./release-notes-generator-main/installer.sh"
+
+# SHOW_GENERATOR_LINK: show link to installer generator after each installation
+SHOW_GENERATOR_LINK='true'
