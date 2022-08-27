@@ -2,6 +2,7 @@
 
 # Installer configuration
 INSTALLING_APP_NAME='generate-one-line-installer'
+APP_TO_INSTALL='generate_one_line_installer.sh'
 
 # Output colors
 APP_NAME='installer'
@@ -61,6 +62,7 @@ function _yes_no_question() {
 function _get_input() {
   ask_input_message=$1
   output_variable_name=$2
+  # shellcheck disable=SC2229
   read -p "$(echo -e "$BROWN($APP_NAME : INPUT) $ask_input_message: $NEUTRAL_COLOR")" -r "$output_variable_name"
 }
 
@@ -104,7 +106,7 @@ function _check_installed_version() {
   # get installer path in case if installer started not from the same directory
   installer_path=$(_get_script_source_path)
   installed_version=$($INSTALLING_APP_NAME -v) || return 1
-  available_version=$("$installer_path/generate_one_line_installer.sh" -v) || return 1
+  available_version=$("$installer_path/$APP_TO_INSTALL" -v) || return 1
   if [ "$installed_version" = "$available_version" ]; then
     _show_updated_message "$INSTALLING_APP_NAME was successfully installed"
   else
@@ -128,7 +130,7 @@ function _install() {
 
   # install generator
   mkdir -p "$INSTALLATION_DIR" || return 1
-  cp -f "$installer_path/generate_one_line_installer.sh" "$INSTALLATION_DIR/$INSTALLING_APP_NAME" || return 1
+  cp -f "$installer_path/$APP_TO_INSTALL" "$INSTALLATION_DIR/$INSTALLING_APP_NAME" || return 1
 
   # check is generator installed properly
   _check_installed_version || return 1

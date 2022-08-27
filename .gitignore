@@ -1,5 +1,8 @@
-#idea files
+# idea files
 .idea
 
-#visual studio code files
+# visual studio code files
 .vscode
+
+# generated installers
+installers

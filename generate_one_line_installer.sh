@@ -2,7 +2,7 @@
 
 # Written by Shishkin Sergey <shishkin.sergey.d@gmail.com>
 
-# Current version of version_manager.sh.
+# Current generator version
 INSTALLER_GENERATOR_VERSION='1.0.0'
 
 OFFICIAL_REPO='Greewil/one-line-installer'
@@ -67,6 +67,7 @@ function _yes_no_question() {
 function _get_input() {
   ask_input_message=$1
   output_variable_name=$2
+  # shellcheck disable=SC2229
   read -p "$(echo -e "$BROWN($APP_NAME : INPUT) $ask_input_message: $NEUTRAL_COLOR")" -r "$output_variable_name"
 }
 
@@ -99,6 +100,7 @@ function _load_project_variables_from_config() {
   config_file=$1
   tmp_conf_file="/tmp/${APP_NAME}_projects_conf_file.conf"
   echo "$config_file" > $tmp_conf_file
+  # shellcheck source=/dev/null
   . $tmp_conf_file || {
     rm -f "/tmp/${APP_NAME}_projects_conf_file.conf"
     return 1
@@ -108,14 +110,17 @@ function _load_project_variables_from_config() {
 
 function _get_message_command() {
   message_text=$1
+  # shellcheck disable=SC2028
   echo "printf '%b' '\n$message_text\n\n'"
 }
 
 function _get_advertisement_message_command() {
+  # shellcheck disable=SC2028
   echo "printf '%b' '\nThis installation command was generated with \\e[1;34m$OFFICIAL_REPO_FULL\\e[0m\n\n'"
 }
 
 function _get_init_variables_command() {
+  # shellcheck disable=SC2016
   date_time='$(date +%s%N)'
   tmp_dir_var_command="tmp_dir=/tmp/installation-$date_time"
   start_dir_var_command="start_dir=\$(pwd)"
@@ -171,6 +176,7 @@ function _get_install_command() {
 }
 
 function _get_remove_src_command() {
+  # shellcheck disable=SC2016
   date_time='$(date +%s%N)'
   go_to_start_dir="cd \$start_dir"
   remove_tmp_dir_command="rm -r \$tmp_dir"
@@ -232,6 +238,7 @@ function _try_save_final_command() {
   check_function="_check_file_can_be_created"
   check_failed_message="File can't be created!"
   _get_input_with_check "$ask_package_link" "$output_variable_name" "$check_function" "$check_failed_message"
+  # shellcheck disable=SC2016
   save_to_file_command='echo "$FINAL_INSTALLATION_COMMAND" > "$file_name"'
   if [ -f "$file_name" ]; then
     ask_rewrite="File $file_name already exists. Do you want to rewrite file?"
